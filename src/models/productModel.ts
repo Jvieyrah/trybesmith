@@ -23,4 +23,11 @@ export default class ProductModel {
       ...product,
     };
   }
+
+  public async findAll(): Promise<Product[]> {
+    const query = 'SELECT * FROM Trybesmith.Products';
+    const result = await this.connection.execute(query);
+    const [rows] = result;
+    return rows as Product[];
+  }
 }
