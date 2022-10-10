@@ -35,6 +35,28 @@ function validateProduct(req : Request, res : Response, next : NextFunction) {
   next();
 }
 
+function validateUser(req : Request, res : Response, next : NextFunction) {
+  const { username, classe, level, password } = req.body;
+  const schema = Joi.object({
+    username: Joi.string().required().min(3),
+    classe: Joi.string().required().min(3),
+    level: Joi.number().required().min(1),
+    password: Joi.string().required().min(8),
+  });
+  const { error } = schema.validate({ username, classe, level, password });
+  if (error) {
+    const { details } = error;
+    const message = details.map((i) => i.message).join(',');
+    let statusCode = fourTwenty2;
+    if (message.includes('required')) {
+      statusCode = fourHundred;
+    }
+    // console.log('error', message);
+    return res.status(statusCode).json({ message: error.message });
+  }
+  next();
+}
+
 export default class Validator {
   public static vLogin(req : Request, res : Response, next : NextFunction) {
     return validateLogin(req, res, next);
@@ -42,5 +64,9 @@ export default class Validator {
 
   public static vProduct(req : Request, res : Response, next : NextFunction) {
     return validateProduct(req, res, next);
+  }
+
+  public static vUser(req : Request, res : Response, next : NextFunction) {
+    return validateUser(req, res, next);
   }
 }
