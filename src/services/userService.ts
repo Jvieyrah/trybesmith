@@ -1,7 +1,7 @@
 import connection from '../models/connection';
 import UserModel from '../models/userModel';
 import User from '../interfaces/user.interface';
-import AuthService from '../midlewares/auth';
+import AuthService from '../middlewares/auth';
 // import treatedError from '../interfaces/error.interface';
 
 export default class UserService {
