@@ -1,9 +1,16 @@
 import { Request, Response, NextFunction } from 'express';
 import Joi from 'joi';
-// import Product from '../interfaces/product.interface';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const secret = process.env.JTW_SECRET || 'secret';
 
 const fourHundred = 400;
 const fourTwenty2 = 422;
+const fourHundredOne = 401;
+
 function validateLogin(req : Request, res : Response, next : NextFunction) {
   const { username, password } = req.body;
   if (!username) {
@@ -57,6 +64,40 @@ function validateUser(req : Request, res : Response, next : NextFunction) {
   next();
 }
 
+function validateToken(req : Request, res : Response, next : NextFunction) {
+  const { authorization } = req.headers;
+  if (!authorization) {
+    return res.status(fourHundredOne).json({ message: 'Token not found' });
+  }
+  try {
+    jwt.verify(authorization, secret);
+
+    return next();
+  } catch (err) {
+    return res.status(fourHundredOne).json({ message: 'Invalid token' });
+  }
+}
+
+function validateOrder(req : Request, res : Response, next : NextFunction) {
+  const { productsIds } = req.body;
+  const schema = Joi.object({
+    productsIds: Joi.array().required().min(1),
+  });
+  const { error } = schema.validate({ productsIds });
+  if (error) {
+    const { details } = error;
+    let message = details.map((i) => i.message).join(',');
+    let statusCode = fourTwenty2;
+    if (message.includes('contain at least 1 items')) { 
+      message = '"productsIds" must include only numbers';
+    }
+    if (message.includes('required')) { statusCode = fourHundred; }
+    // console.log('error', message);
+    return res.status(statusCode).json({ message: message }); 
+  }
+  next();
+}
+
 export default class Validator {
   public static vLogin(req : Request, res : Response, next : NextFunction) {
     return validateLogin(req, res, next);
@@ -68,5 +109,13 @@ export default class Validator {
 
   public static vUser(req : Request, res : Response, next : NextFunction) {
     return validateUser(req, res, next);
+  }
+
+  public static vToken(req : Request, res : Response, next : NextFunction) {
+    return validateToken(req, res, next);
+  }
+
+  public static vOrder(req : Request, res : Response, next : NextFunction) {
+    return validateOrder(req, res, next);
   }
 }

@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import Token from '../interfaces/token.interface';
 
 dotenv.config();
 
@@ -13,8 +14,9 @@ export default class AuthService {
     });
     return token;
   }
-  // public static async verifyToken(token: string): Promise<object> {
-  //     const decoded = jwt.verify(token, segredo);
-  //     return decoded;
-  // }
+
+  public static async verifyToken(token: string): Promise<Token> {
+    const decoded = jwt.verify(token as string, secret) as Token;
+    return decoded;
+  }
 }
