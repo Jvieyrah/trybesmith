@@ -93,7 +93,7 @@ function validateOrder(req : Request, res : Response, next : NextFunction) {
     }
     if (message.includes('required')) { statusCode = fourHundred; }
     // console.log('error', message);
-    return res.status(statusCode).json({ message: message }); 
+    return res.status(statusCode).json({ message }); 
   }
   next();
 }
